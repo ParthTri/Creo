@@ -1,1 +1,20 @@
-{}
+[
+	"Python": {
+		"inherit": false,
+		"git": true,
+		"gitignore": "__pycache__\n .venv/",
+		"env": false,
+		"externalProgramsEnd": [
+			"python3 -m venv .venv"
+		],
+		"dirs": [
+			"tests",
+			"src",
+			"docs"
+		],
+		"files": [
+			"docs/Purpose.org",
+			"README.org"
+		]
+	},
+]
