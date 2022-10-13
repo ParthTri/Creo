@@ -1,4 +1,4 @@
-[
+{
 	"Python": {
 		"inherit": false,
 		"git": true,
@@ -16,5 +16,5 @@
 			"docs/Purpose.org",
 			"README.org"
 		]
-	},
-]
+	}
+}
