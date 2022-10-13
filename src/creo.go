@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type TemplateStructure struct {
@@ -43,7 +45,16 @@ func ReadConfig() Template {
 	return Project
 }
 
+func input(prompt string, reader *bufio.Reader) (string, error) {
+	fmt.Print(prompt)
+	output, err := reader.ReadString('\n')	
+	output = strings.TrimSpace(output)
+	return output, err
+}
+
 func main() {
-	testProject := ReadConfig()	
-	fmt.Println(testProject)
+	reader := bufio.NewReader(os.Stdin)
+	Project := ReadConfig()
+
+	projectType, _ := input("What type of project is it? ", reader)
 }
