@@ -45,6 +45,24 @@ func ReadConfig() Template {
 	return Project
 }
 
+type Project struct {
+	Name				string
+	Path				string
+	Structure		*TemplateStructure
+}
+
+// TODO: Allow for user to set the path to their Projects directory or use the one supplied by the project structure
+func NewProject(name string, structure *TemplateStructure) Project {
+	project := Project{
+		Name:				name,
+		Structure: structure,
+	}
+
+	project.Path, _ = os.UserHomeDir() 
+	project.Path += "/Projects/" + project.Name
+
+	return project
+}
 func input(prompt string, reader *bufio.Reader) (string, error) {
 	fmt.Print(prompt)
 	output, err := reader.ReadString('\n')	
