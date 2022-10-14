@@ -105,6 +105,23 @@ func (project Project)Git() error {
 	err = os.WriteFile(gitignore, []byte(project.Structure.Gitignore), 0666)
 	return err
 }
+
+// Iterate over external programs as listed in TemplateStructure.ExternalProgramsEnd and run them at the end of project construction
+func (project Project)AfterHook() error {
+	var Err error
+	for _, command := range project.Structure.ExternalProgramsEnd {
+		commandSplit := strings.Split(command, " ")	
+		os.Chdir(project.Path)
+
+		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
+		err := cmd.Run()
+		if err != nil {
+			Err = err
+		}
+	}
+	return Err
+}
+
 func input(prompt string, reader *bufio.Reader) (string, error) {
 	fmt.Print(prompt)
 	output, err := reader.ReadString('\n')	
@@ -150,7 +167,7 @@ func main() {
 			fmt.Println("Error creating .env file")
 		}
 	}
-
+	
 	if len(Project.Structure.Dirs) != 0 {
 		err := Project.CreateDirectories()
 		if err != nil {
@@ -159,13 +176,22 @@ func main() {
 			return 
 		}
 	}
-
+	
 	if len(Project.Structure.Files) != 0 {
 		err := Project.CreateFiles()
 		if err != nil {
 			fmt.Println("Error Creating Files")
 			fmt.Println(err)
 			return 
+		}
+	}
+
+	if len(Project.Structure.ExternalProgramsEnd) != 0 {
+		err := Project.AfterHook()
+		if err != nil {
+			fmt.Println("Error running")
+			fmt.Println(err)
+			return
 		}
 	}
 }
