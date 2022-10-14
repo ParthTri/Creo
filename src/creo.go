@@ -104,4 +104,13 @@ func main() {
 		fmt.Println("Error creating project directory")
 		return
 	}
+
+	if Project.Structure.Git {
+		status := Project.Git()
+		if status != nil {
+			fmt.Println("Error with git")
+			fmt.Println(status)
+			return
+		}
+	}
 }
