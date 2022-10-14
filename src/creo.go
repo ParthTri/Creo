@@ -133,7 +133,7 @@ func main() {
 		fmt.Println("Error creating project directory")
 		return
 	}
-
+	
 	if Project.Structure.Git {
 		status := Project.Git()
 		if status != nil {
@@ -142,7 +142,7 @@ func main() {
 			return
 		}
 	}
-
+	
 	if Project.Structure.Env {
 		path := fmt.Sprintf("%v/.env", Project.Path)
 		_, err := os.Create(path)
@@ -155,6 +155,15 @@ func main() {
 		err := Project.CreateDirectories()
 		if err != nil {
 			fmt.Println("Error Creating Sub-Directories")
+			fmt.Println(err)
+			return 
+		}
+	}
+
+	if len(Project.Structure.Files) != 0 {
+		err := Project.CreateFiles()
+		if err != nil {
+			fmt.Println("Error Creating Files")
 			fmt.Println(err)
 			return 
 		}
