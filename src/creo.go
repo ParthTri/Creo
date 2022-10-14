@@ -83,4 +83,12 @@ func main() {
 
 	name, _ := input("What is the name of this project: ", reader)
 	Project := NewProject(name, &projectStructure)
+
+	// Creating the project diretory
+	// TODO: Run BeforeHook
+	err := os.Mkdir(Project.Path, 0750)
+	if err != nil {
+		fmt.Println("Error creating project directory")
+		return
+	}
 }
