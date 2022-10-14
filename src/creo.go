@@ -113,4 +113,12 @@ func main() {
 			return
 		}
 	}
+
+	if Project.Structure.Env {
+		path := fmt.Sprintf("%v/.env", Project.Path)
+		_, err := os.Create(path)
+		if err != nil {
+			fmt.Println("Error creating .env file")
+		}
+	}
 }
