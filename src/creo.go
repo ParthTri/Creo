@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -62,6 +63,18 @@ func NewProject(name string, structure *TemplateStructure) Project {
 	project.Path += "/Projects/" + project.Name
 
 	return project
+}
+// Initiate Git and append data to gitignore file
+func (project Project)Git() error {
+	cmd := exec.Command("git", "init", project.Path)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	gitignore := fmt.Sprintf("%v/.gitignore", project.Path)
+	err = os.WriteFile(gitignore, []byte(project.Structure.Gitignore), 0666)
+	return err
 }
 func input(prompt string, reader *bufio.Reader) (string, error) {
 	fmt.Print(prompt)
