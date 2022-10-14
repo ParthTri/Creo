@@ -2,7 +2,7 @@
 	"Python": {
 		"inherit": false,
 		"git": true,
-		"gitignore": "__pycache__\n .venv/",
+		"gitignore": "__pycache__\n.venv/",
 		"env": false,
 		"externalProgramsEnd": [
 			"python3 -m venv .venv"
