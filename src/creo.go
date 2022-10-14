@@ -79,6 +79,20 @@ func (project Project)CreateDirectories() error {
 	return Err
 }
 
+// Function to iterate over files in TemplateStructure.Files and create them
+// Make sure that the directory already exists for verboseness
+func (project Project)CreateFiles() error{
+	var Err error
+	for _, file := range project.Structure.Files {
+		path := fmt.Sprintf("%v/%v", project.Path, file)
+		_, err := os.Create(path)
+		if err != nil {
+			Err = err
+		}
+	}
+	return Err
+}
+
 // Initiate Git and append data to gitignore file
 func (project Project)Git() error {
 	cmd := exec.Command("git", "init", project.Path)
