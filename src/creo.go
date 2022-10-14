@@ -136,4 +136,13 @@ func main() {
 			fmt.Println("Error creating .env file")
 		}
 	}
+
+	if len(Project.Structure.Dirs) != 0 {
+		err := Project.CreateDirectories()
+		if err != nil {
+			fmt.Println("Error Creating Sub-Directories")
+			fmt.Println(err)
+			return 
+		}
+	}
 }
