@@ -72,7 +72,15 @@ func input(prompt string, reader *bufio.Reader) (string, error) {
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	Project := ReadConfig()
+	Config := ReadConfig()
 
 	projectType, _ := input("What type of project is it? ", reader)
+	projectStructure, exists := Config[projectType]
+	if !exists {
+		fmt.Println("Project Template Not Found")
+		return
+	}
+
+	name, _ := input("What is the name of this project: ", reader)
+	Project := NewProject(name, &projectStructure)
 }
