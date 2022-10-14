@@ -10,7 +10,8 @@
 		"dirs": [
 			"tests",
 			"src",
-			"docs"
+			"docs",
+			"docs/examples"
 		],
 		"files": [
 			"docs/Purpose.org",
