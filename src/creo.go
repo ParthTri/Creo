@@ -64,6 +64,21 @@ func NewProject(name string, structure *TemplateStructure) Project {
 
 	return project
 }
+
+// Function to iterate over directories in TemplateStructure.Dirs and create them 
+// Allows for implicit directories i.e. "src/templates"
+func (project Project)CreateDirectories() error {
+	var Err error
+	for _, directory := range project.Structure.Dirs {
+		path := fmt.Sprintf("%v/%v", project.Path, directory)
+		err := os.MkdirAll(path, 0750)
+		if err != nil {
+			Err = err	
+		}
+	}	
+	return Err
+}
+
 // Initiate Git and append data to gitignore file
 func (project Project)Git() error {
 	cmd := exec.Command("git", "init", project.Path)
