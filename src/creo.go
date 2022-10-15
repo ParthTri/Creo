@@ -201,8 +201,14 @@ func main() {
 	name, _ := input("What is the name of this project: ", reader)
 	Project := NewProject(name, &projectStructure)
 
+	// Run BeforeHook
+	if len(Project.Structure.ExternalProgramsStart) != 0 {
+		fmt.Println(Project.BeforeHook())
+		return 
+	}
+
 	// Creating the project diretory
-	// TODO: Run BeforeHook
+	// TODO: Check if project doesn't already exist
 	err := os.Mkdir(Project.Path, 0750)
 	if err != nil {
 		fmt.Println("Error creating project directory")
