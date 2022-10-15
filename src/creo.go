@@ -60,8 +60,9 @@ func NewProject(name string, structure *TemplateStructure) Project {
 		Structure: structure,
 	}
 
-	project.Path, _ = os.UserHomeDir() 
-	project.Path += "/Projects/" + project.Name
+	project.ProjectsDir, _ = os.UserHomeDir() 
+	project.ProjectsDir += "/Projects/"
+	project.Path += project.ProjectsDir + project.Name
 
 	return project
 }
