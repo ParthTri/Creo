@@ -14,6 +14,7 @@ import (
 
 type TemplateStructure struct {
 	Inherit									bool			`json:"inherit"`
+	ProjectsDir							string		`json:"projectsDir"`
 	ParentTemplate					string		`json:"parent"`
 	Git											bool			`json:"git"`	
 	Gitignore								string		`json:"gitignore"`
@@ -55,15 +56,23 @@ type Project struct {
 	Structure		*TemplateStructure
 }
 
-// TODO: Allow for user to set the path to their Projects directory or use the one supplied by the project structure
 func NewProject(name string, structure *TemplateStructure) Project {
 	project := Project{
 		Name:				name,
 		Structure: structure,
 	}
 
-	project.ProjectsDir, _ = os.UserHomeDir() 
-	project.ProjectsDir += "/Projects/"
+	if structure.ProjectsDir != "" {
+		project.ProjectsDir = structure.ProjectsDir
+		if string(project.ProjectsDir[0]) == "~" {
+			projectsPath := strings.Split(project.ProjectsDir, "/")
+			projectsPath[0], _ = os.UserHomeDir()
+			project.ProjectsDir = strings.Join(projectsPath, "/")
+		}
+	} else {
+		project.ProjectsDir, _ = os.UserHomeDir() 
+		project.ProjectsDir += "/Projects/"
+	}
 	project.Path += project.ProjectsDir + project.Name
 
 	return project
@@ -204,7 +213,6 @@ func main() {
 	// Run BeforeHook
 	if len(Project.Structure.ExternalProgramsStart) != 0 {
 		fmt.Println(Project.BeforeHook())
-		return 
 	}
 
 	// Creating the project diretory
@@ -212,6 +220,7 @@ func main() {
 	err := os.Mkdir(Project.Path, 0750)
 	if err != nil {
 		fmt.Println("Error creating project directory")
+		fmt.Println(err)
 		return
 	}
 	
