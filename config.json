@@ -17,5 +17,17 @@
 			"docs/Purpose.org",
 			"README.org"
 		]
+	},
+	"React": {
+		"inherit": false,
+		"git": false,
+		"env": false,
+		"externalProgramsEnd": [
+			"pnpm install"
+		],
+		"externalProgramsStart": [
+			"pnpm create vite $name --template react",
+			"cd $path && pnpm install"
+		]
 	}
 }
