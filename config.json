@@ -1,6 +1,7 @@
 {
 	"Python": {
 		"inherit": false,
+		"projectsDir": "~/Developer/",
 		"git": true,
 		"gitignore": "__pycache__\n.venv/",
 		"env": false,
