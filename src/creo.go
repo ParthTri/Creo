@@ -145,6 +145,41 @@ func (project Project)GetInterpolateData(object reflect.Type, arg string) (strin
 	return "", errors.New("Tag Not Found")
 }
 
+// Iterate over external programs as listed in TemplateStructure.ExternalProgramsStart and run them at the start of project construction before the project directory is made 
+// BUG: change directory (cd) doesn't work. Need to change current directory through os.Chdir()
+func (project Project)BeforeHook() error {
+	var Err error
+	object := reflect.TypeOf(project)
+
+	var interpolateData string
+	var interpolateDataIndex int
+	for _, command := range project.Structure.ExternalProgramsStart {
+		commandSplit := strings.Split(command, " ")		
+		for index, arg := range commandSplit {
+			if string(arg[0]) == "$" {
+				data, err := project.GetInterpolateData(object, arg)
+				if err != nil {
+					return err
+				}
+				interpolateData = data	
+				interpolateDataIndex = index
+				break
+			}
+		}
+		if interpolateData != "" {
+			commandSplit[interpolateDataIndex] = interpolateData
+		}
+
+		os.Chdir(project.ProjectsDir)
+		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
+		err := cmd.Run()
+		if err != nil {
+			Err = err
+		}
+	}
+	return Err
+}
+
 func input(prompt string, reader *bufio.Reader) (string, error) {
 	fmt.Print(prompt)
 	output, err := reader.ReadString('\n')	
