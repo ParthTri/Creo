@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 )
 
@@ -122,6 +124,25 @@ func (project Project)AfterHook() error {
 		}
 	}
 	return Err
+}
+
+func (project Project)GetFieldValue(field string) string {
+	fieldsMap := map[string]string{
+		"$name": project.Name,
+		"$projectsDir": project.ProjectsDir,
+		"$path": project.Path,
+	}
+	return fieldsMap[field]
+}
+
+func (project Project)GetInterpolateData(object reflect.Type, arg string) (string, error) {
+	for i := 0; i < object.NumField(); i++ {
+		field := object.Field(i)
+		if tag := field.Tag.Get("arg"); tag == arg {
+			return project.GetFieldValue(tag), nil
+		}
+	}
+	return "", errors.New("Tag Not Found")
 }
 
 func input(prompt string, reader *bufio.Reader) (string, error) {
