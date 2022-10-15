@@ -47,8 +47,9 @@ func ReadConfig() Template {
 }
 
 type Project struct {
-	Name				string
-	Path				string
+	Name				string							`arg:"$name"`
+	ProjectsDir	string							`arg:"$projectsDir"`
+	Path				string							`arg:"$path"`
 	Structure		*TemplateStructure
 }
 
