@@ -44,6 +44,7 @@ func ReadConfig() Template {
 	Project := Template{}
 	json := json.Unmarshal(byteData, &Project)
 	if json != nil {
+		fmt.Println(json)
 		os.Exit(1)
 	}
 
