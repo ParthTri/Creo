@@ -157,7 +157,6 @@ func (project Project)GetInterpolateData(object reflect.Type, arg string) (strin
 }
 
 // Iterate over external programs as listed in TemplateStructure.ExternalProgramsStart and run them at the start of project construction before the project directory is made 
-// BUG: change directory (cd) doesn't work. Need to change current directory through os.Chdir()
 func (project Project)BeforeHook() error {
 	var Err error
 	object := reflect.TypeOf(project)
