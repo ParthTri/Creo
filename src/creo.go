@@ -19,6 +19,7 @@ type TemplateStructure struct {
 	Git											bool			`json:"git"`	
 	Gitignore								string		`json:"gitignore"`
 	Env											bool			`json:"env"`
+	IgnoreProjectPrexists		bool			`json:"ignoreProjectPrexists"`
 	ExternalProgramsEnd			[]string	`json:"externalProgramsEnd"`
 	ExternalProgramsStart		[]string	`json:"externalProgramsStart"`
 	Dirs										[]string	`json:"dirs"`
@@ -216,9 +217,8 @@ func main() {
 	}
 
 	// Creating the project diretory
-	// TODO: Check if project doesn't already exist
 	err := os.Mkdir(Project.Path, 0750)
-	if err != nil {
+	if os.IsExist(err) && Project.Structure.IgnoreProjectPrexists { }	else if err != nil {
 		fmt.Println("Error creating project directory")
 		fmt.Println(err)
 		return

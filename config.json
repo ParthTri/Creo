@@ -21,14 +21,14 @@
 	},
 	"React": {
 		"inherit": false,
+		"ignoreProjectPrexists": true,
 		"git": false,
 		"env": false,
 		"externalProgramsEnd": [
 			"pnpm install"
 		],
 		"externalProgramsStart": [
-			"pnpm create vite $name --template react",
-			"cd $path && pnpm install"
+			"pnpm create vite $name --template react"
 		]
 	}
 }
