@@ -75,6 +75,18 @@ import (
 		project.Path += project.ProjectsDir + project.Name
 	}
 
+func (project *Project)loadArgs (args [][]string) {
+	tagObject := reflect.TypeOf(*project)
+	object := reflect.ValueOf(project).Elem()
+
+	for i := 0; i < object.NumField(); i++ {
+		field := object.Field(i)
+		tagField := tagObject.Field(i)
+		for _, arg := range args {
+			tag := arg[0]
+			if tag == string(tagField.Tag.Get("cli")) {
+				field.SetString(arg[1])
+			}
 		}
 	}
 }
