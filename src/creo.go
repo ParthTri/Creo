@@ -291,8 +291,6 @@ func main() {
 	}
 
 	Project.GenerateProjectPaths()
-	fmt.Println(Project.Structure.ProjectsDir)
-	fmt.Println(Project.Path)
 
 	// Run BeforeHook
 	if len(Project.Structure.ExternalProgramsStart) != 0 {
