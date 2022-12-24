@@ -136,122 +136,122 @@ func GetCliArgs() ([][]string, error) {
 	return args, Err
 }
 
-	// Function to iterate over directories in TemplateStructure.Dirs and create them 
-	// Allows for implicit directories i.e. "src/templates"
-	func (project Project)CreateDirectories() error {
-		var Err error
-		for _, directory := range project.Structure.Dirs {
-			path := fmt.Sprintf("%v/%v", project.Path, directory)
-			err := os.MkdirAll(path, 0750)
-			if err != nil {
-				Err = err	
-			}
-		}	
-		return Err
-	}
-
-	// Function to iterate over files in TemplateStructure.Files and create them
-	// Make sure that the directory already exists for verboseness
-	func (project Project)CreateFiles() error{
-		var Err error
-		for _, file := range project.Structure.Files {
-			path := fmt.Sprintf("%v/%v", project.Path, file)
-			_, err := os.Create(path)
-			if err != nil {
-				Err = err
-			}
-		}
-		return Err
-	}
-
-	// Initiate Git and append data to gitignore file
-	func (project Project)Git() error {
-		cmd := exec.Command("git", "init", project.Path)
-		err := cmd.Run()
+// Function to iterate over directories in TemplateStructure.Dirs and create them 
+// Allows for implicit directories i.e. "src/templates"
+func (project Project)CreateDirectories() error {
+	var Err error
+	for _, directory := range project.Structure.Dirs {
+		path := fmt.Sprintf("%v/%v", project.Path, directory)
+		err := os.MkdirAll(path, 0750)
 		if err != nil {
-			return err
+			Err = err	
 		}
+	}	
+	return Err
+}
 
-		gitignore := fmt.Sprintf("%v/.gitignore", project.Path)
-		err = os.WriteFile(gitignore, []byte(project.Structure.Gitignore), 0666)
+// Function to iterate over files in TemplateStructure.Files and create them
+// Make sure that the directory already exists for verboseness
+func (project Project)CreateFiles() error{
+	var Err error
+	for _, file := range project.Structure.Files {
+		path := fmt.Sprintf("%v/%v", project.Path, file)
+		_, err := os.Create(path)
+		if err != nil {
+			Err = err
+		}
+	}
+	return Err
+}
+
+// Initiate Git and append data to gitignore file
+func (project Project)Git() error {
+	cmd := exec.Command("git", "init", project.Path)
+	err := cmd.Run()
+	if err != nil {
 		return err
 	}
 
-	// Iterate over external programs as listed in TemplateStructure.ExternalProgramsEnd and run them at the end of project construction
-	func (project Project)AfterHook() error {
-		var Err error
-		for _, command := range project.Structure.ExternalProgramsEnd {
-			commandSplit := strings.Split(command, " ")	
-			os.Chdir(project.Path)
+	gitignore := fmt.Sprintf("%v/.gitignore", project.Path)
+	err = os.WriteFile(gitignore, []byte(project.Structure.Gitignore), 0666)
+	return err
+}
 
-			cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
-			err := cmd.Run()
-			if err != nil {
-				Err = err
-			}
+// Iterate over external programs as listed in TemplateStructure.ExternalProgramsEnd and run them at the end of project construction
+func (project Project)AfterHook() error {
+	var Err error
+	for _, command := range project.Structure.ExternalProgramsEnd {
+		commandSplit := strings.Split(command, " ")	
+		os.Chdir(project.Path)
+
+		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
+		err := cmd.Run()
+		if err != nil {
+			Err = err
 		}
-		return Err
 	}
+	return Err
+}
 
-	func (project Project)GetFieldValue(field string) string {
-		fieldsMap := map[string]string{
-			"$name": project.Name,
-			"$projectsDir": project.ProjectsDir,
-			"$path": project.Path,
+func (project Project)GetFieldValue(field string) string {
+	fieldsMap := map[string]string{
+		"$name": project.Name,
+		"$projectsDir": project.ProjectsDir,
+		"$path": project.Path,
+	}
+	return fieldsMap[field]
+}
+
+func (project Project)GetInterpolateData(object reflect.Type, arg string) (string, error) {
+	for i := -1; i < object.NumField(); i++ {
+		field := object.Field(i)
+		if tag := field.Tag.Get("arg"); tag == arg {
+			return project.GetFieldValue(tag), nil
 		}
-		return fieldsMap[field]
 	}
+	return "", errors.New("Tag Not Found")
+}
 
-	func (project Project)GetInterpolateData(object reflect.Type, arg string) (string, error) {
-		for i := -1; i < object.NumField(); i++ {
-			field := object.Field(i)
-			if tag := field.Tag.Get("arg"); tag == arg {
-				return project.GetFieldValue(tag), nil
-			}
-		}
-		return "", errors.New("Tag Not Found")
-	}
+// Iterate over external programs as listed in TemplateStructure.ExternalProgramsStart and run them at the start of project construction before the project directory is made 
+func (project Project)BeforeHook() error {
+	var Err error
+	object := reflect.TypeOf(project)
 
-	// Iterate over external programs as listed in TemplateStructure.ExternalProgramsStart and run them at the start of project construction before the project directory is made 
-	func (project Project)BeforeHook() error {
-		var Err error
-		object := reflect.TypeOf(project)
-
-		var interpolateData string
-		var interpolateDataIndex int
-		for _, command := range project.Structure.ExternalProgramsStart {
-			commandSplit := strings.Split(command, " ")		
-			for index, arg := range commandSplit {
-				if string(arg[0]) == "$" {
-					data, err := project.GetInterpolateData(object, arg)
-					if err != nil {
-						return err
-					}
-					interpolateData = data	
-					interpolateDataIndex = index
-					break
+	var interpolateData string
+	var interpolateDataIndex int
+	for _, command := range project.Structure.ExternalProgramsStart {
+		commandSplit := strings.Split(command, " ")		
+		for index, arg := range commandSplit {
+			if string(arg[0]) == "$" {
+				data, err := project.GetInterpolateData(object, arg)
+				if err != nil {
+					return err
 				}
-			}
-			if interpolateData != "" {
-				commandSplit[interpolateDataIndex] = interpolateData
-			}
-
-			os.Chdir(project.ProjectsDir)
-			cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
-			err := cmd.Run()
-			if err != nil {
-				Err = err
+				interpolateData = data	
+				interpolateDataIndex = index
+				break
 			}
 		}
-		return Err
-	}
+		if interpolateData != "" {
+			commandSplit[interpolateDataIndex] = interpolateData
+		}
 
-	func input(prompt string, reader *bufio.Reader) (string, error) {
-		fmt.Print(prompt)
-		output, err := reader.ReadString('\n')	
-		output = strings.TrimSpace(output)
-		return output, err
+		os.Chdir(project.ProjectsDir)
+		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
+		err := cmd.Run()
+		if err != nil {
+			Err = err
+		}
 	}
+	return Err
+}
+
+func input(prompt string, reader *bufio.Reader) (string, error) {
+	fmt.Print(prompt)
+	output, err := reader.ReadString('\n')	
+	output = strings.TrimSpace(output)
+	return output, err
+}
 
 func main() {
 	var projectStructure TemplateStructure
