@@ -273,12 +273,22 @@ func main() {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
+	if Project.Structure == nil {
+		projectType, _ := input("What type of project is it? ", reader)
+		projectStructure, exists := Config[projectType]
 
-	projectType, _ := input("What type of project is it? ", reader)
-	projectStructure, exists := Config[projectType]
-
-	if !exists {
-		fmt.Println("Project Template Not Found")
-		return
+		if !exists {
+			fmt.Println("Project Template Not Found")
+			return
+		}
+		Project.Structure = &projectStructure
+		Project.TemplateName = projectType
 	}
+	
+	if Project.Name == "" {
+		name, _ := input("What is the name of this project: ", reader)
+		Project.Name = name
+	}
+
+	Project.GenerateProjectPaths()
 }
