@@ -60,20 +60,20 @@ import (
 		Structure			*TemplateStructure	
 	}
 
-	func (project Project)GenerateProjectPaths(){
-		if project.Structure.ProjectsDir != "" {
-			project.ProjectsDir = project.Structure.ProjectsDir
-			if string(project.ProjectsDir[0]) == "~" {
-				projectsPath := strings.Split(project.ProjectsDir, "/")
-				projectsPath[0], _ = os.UserHomeDir()
-				project.ProjectsDir = strings.Join(projectsPath, "/")
-			}
-		} else {
-			project.ProjectsDir, _ = os.UserHomeDir() 
-			project.ProjectsDir += "/Projects/"
+func (project *Project)GenerateProjectPaths(){
+	if project.Structure.ProjectsDir != "" {
+		project.ProjectsDir = project.Structure.ProjectsDir
+		if string(project.ProjectsDir[0]) == "~" {
+			projectsPath := strings.Split(project.ProjectsDir, "/")
+			projectsPath[0], _ = os.UserHomeDir()
+			project.ProjectsDir = strings.Join(projectsPath, "/")
 		}
-		project.Path += project.ProjectsDir + project.Name
+	} else {
+		project.ProjectsDir, _ = os.UserHomeDir() 
+		project.ProjectsDir += "/Projects/"
 	}
+	project.Path += project.ProjectsDir + project.Name
+}
 
 func (project *Project)loadArgs (args [][]string) {
 	tagObject := reflect.TypeOf(*project)
