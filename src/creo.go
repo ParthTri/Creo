@@ -253,7 +253,6 @@ func (project *Project)loadArgs (args [][]string) {
 		return output, err
 	}
 
-	// TODO: Add CLI args to project structure
 func main() {
 	var projectStructure TemplateStructure
 	var Project *Project = &Project{}
