@@ -242,31 +242,31 @@ import (
 	}
 
 	// TODO: Add CLI args to project structure
-	func main() {
-		var projectStructure TemplateStructure
-		var Project *Project = &Project{}
-		Config := ReadConfig()
-		args, err := GetCliArgs()
+func main() {
+	var projectStructure TemplateStructure
+	var Project *Project = &Project{}
+	Config := ReadConfig()
+	args, err := GetCliArgs()
 
-		if err == nil && len(args) > 0 {
-			for _, arg := range args {
-				if arg[0] == "-t" {
-					projectStructure = Config[args[0][1]]
-					Project.Structure = &projectStructure
-				}
+	if err == nil && len(args) > 0 {
+		for _, arg := range args {
+			if arg[0] == "-t" {
+				projectStructure = Config[args[0][1]]
+				Project.Structure = &projectStructure
 			}
 		}
-		if len(args) > 0 {
-			Project.loadArgs(args)	
-		}
+	}
+	if len(args) > 0 {
+		Project.loadArgs(args)	
+	}
 
-		reader := bufio.NewReader(os.Stdin)
-		
-		projectType, _ := input("What type of project is it? ", reader)
-		projectStructure, exists := Config[projectType]
+	reader := bufio.NewReader(os.Stdin)
 
-		if !exists {
-			fmt.Println("Project Template Not Found")
-			return
-		}
+	projectType, _ := input("What type of project is it? ", reader)
+	projectStructure, exists := Config[projectType]
+
+	if !exists {
+		fmt.Println("Project Template Not Found")
+		return
+	}
 }
