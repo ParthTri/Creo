@@ -291,4 +291,63 @@ func main() {
 	}
 
 	Project.GenerateProjectPaths()
+	fmt.Println(Project.Structure.ProjectsDir)
+	fmt.Println(Project.Path)
+
+	// Run BeforeHook
+	if len(Project.Structure.ExternalProgramsStart) != 0 {
+		fmt.Println(Project.BeforeHook())
+	}
+
+	// Creating the project diretory
+	err = os.Mkdir(Project.Path, 0750)
+	if os.IsExist(err) && Project.Structure.IgnoreProjectPrexists { }	else if err != nil {
+		fmt.Println("Error creating project directory")
+		fmt.Println(err)
+		return
+	}
+	
+	if Project.Structure.Git {
+		status := Project.Git()
+		if status != nil {
+			fmt.Println("Error with git")
+			fmt.Println(status)
+			return
+		}
+	}
+	
+	if Project.Structure.Env {
+		path := fmt.Sprintf("%v/.env", Project.Path)
+		_, err := os.Create(path)
+		if err != nil {
+			fmt.Println("Error creating .env file")
+		}
+	}
+	
+	if len(Project.Structure.Dirs) != 0 {
+		err := Project.CreateDirectories()
+		if err != nil {
+			fmt.Println("Error Creating Sub-Directories")
+			fmt.Println(err)
+			return 
+		}
+	}
+	
+	if len(Project.Structure.Files) != 0 {
+		err := Project.CreateFiles()
+		if err != nil {
+			fmt.Println("Error Creating Files")
+			fmt.Println(err)
+			return 
+		}
+	}
+	
+	if len(Project.Structure.ExternalProgramsEnd) != 0 {
+		err := Project.AfterHook()
+		if err != nil {
+			fmt.Println("Error running")
+			fmt.Println(err)
+			return
+		}
+	}
 }
