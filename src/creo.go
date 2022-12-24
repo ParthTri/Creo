@@ -91,50 +91,50 @@ func (project *Project)loadArgs (args [][]string) {
 	}
 }
 
-	// Command line arguments
-	// --help
-	//		-t, --template		The template name
-	//		-n, --name				The name of the project
-	func GetCliArgs() ([][]string, error) {
-		var Err error
-		argsArray := os.Args[1:]
+// Command line arguments
+// --help
+//		-t, --template		The template name
+//		-n, --name				The name of the project
+func GetCliArgs() ([][]string, error) {
+	var Err error
+	argsArray := os.Args[1:]
 
-		if len(argsArray) % 2 != 0 {
-			return [][]string{}, errors.New("Wrong number of arguments. Need at least 2.")
-		} else if len(argsArray) > 4 {
-			return [][]string{}, errors.New("Too many arguments. Maximum is 4.")
-		}	
+	if len(argsArray) % 2 != 0 {
+		return [][]string{}, errors.New("Wrong number of arguments. Need at least 2.")
+	} else if len(argsArray) > 4 {
+		return [][]string{}, errors.New("Too many arguments. Maximum is 4.")
+	}	
 
-		test := Project{}
-		object	:= reflect.TypeOf(test)
-		identifiers := []int{}
+	test := Project{}
+	object	:= reflect.TypeOf(test)
+	identifiers := []int{}
 
-		for k := 0; k < object.NumField() ; k++ {
-			field := object.Field(k)
-			tag := field.Tag.Get("cli")
-			for i := 0; i < len(argsArray); i++ {
-				if tag == argsArray[i] { identifiers = append(identifiers, i) }
-			}
+	for k := 0; k < object.NumField() ; k++ {
+		field := object.Field(k)
+		tag := field.Tag.Get("cli")
+		for i := 0; i < len(argsArray); i++ {
+			if tag == argsArray[i] { identifiers = append(identifiers, i) }
 		}
-		
-		var args [][]string
-
-		for i, j := 0, len(identifiers)-1; i < j; i, j = i+1, j-1 {
-			identifiers[i], identifiers[j] = identifiers[j], identifiers[i]
-		}
-		
-		for index, identifier := range identifiers {
-			if index + 1 != len(identifiers) {
-				elements := argsArray[identifier:identifiers[index+1]]
-				args = append(args, elements)
-			} else {
-				elements := argsArray[identifier:]
-				args = append(args, elements)
-			}
-		}
-
-		return args, Err
 	}
+
+	var args [][]string
+
+	for i, j := 0, len(identifiers)-1; i < j; i, j = i+1, j-1 {
+		identifiers[i], identifiers[j] = identifiers[j], identifiers[i]
+	}
+
+	for index, identifier := range identifiers {
+		if index + 1 != len(identifiers) {
+			elements := argsArray[identifier:identifiers[index+1]]
+			args = append(args, elements)
+		} else {
+			elements := argsArray[identifier:]
+			args = append(args, elements)
+		}
+	}
+
+	return args, Err
+}
 
 	// Function to iterate over directories in TemplateStructure.Dirs and create them 
 	// Allows for implicit directories i.e. "src/templates"
