@@ -2,63 +2,63 @@ package main
 
 import (
 	"bufio"
-		"encoding/json"
-		"errors"
-		"fmt"
-		"io/ioutil"
-		"os"
-		"os/exec"
-		"reflect"
-		"strings"
-	)
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"reflect"
+	"strings"
+)
 
-	// TODO: Setup project structure inheritance
-	type TemplateStructure struct {
-		Inherit									bool			`json:"inherit"`
-		ProjectsDir							string		`json:"projectsDir"`
-		ParentTemplate					string		`json:"parent"`
-		Git											bool			`json:"git"`	
-		Gitignore								string		`json:"gitignore"`
-		Env											bool			`json:"env"`
-		IgnoreProjectPrexists		bool			`json:"ignoreProjectPrexists"`
-		ExternalProgramsEnd			[]string	`json:"externalProgramsEnd"`
-		ExternalProgramsStart		[]string	`json:"externalProgramsStart"`
-		Dirs										[]string	`json:"dirs"`
-		Files										[]string	`json:"files"`
+// TODO: Setup project structure inheritance
+type TemplateStructure struct {
+	Inherit									bool			`json:"inherit"`
+	ProjectsDir							string		`json:"projectsDir"`
+	ParentTemplate					string		`json:"parent"`
+	Git											bool			`json:"git"`	
+	Gitignore								string		`json:"gitignore"`
+	Env											bool			`json:"env"`
+	IgnoreProjectPrexists		bool			`json:"ignoreProjectPrexists"`
+	ExternalProgramsEnd			[]string	`json:"externalProgramsEnd"`
+	ExternalProgramsStart		[]string	`json:"externalProgramsStart"`
+	Dirs										[]string	`json:"dirs"`
+	Files										[]string	`json:"files"`
+}
+
+type Template map[string]TemplateStructure
+
+func ReadConfig() Template {
+	file, _ := os.UserConfigDir()
+	file += "/creo/config.json"
+
+	reader, err := os.Open(file)
+	if err != nil {
+		fmt.Println("Config file not found")
+		os.Exit(1)
 	}
 
-	type Template map[string]TemplateStructure
+	byteData, _ := ioutil.ReadAll(reader)
+	defer reader.Close()
 
-	func ReadConfig() Template {
-		file, _ := os.UserConfigDir()
-		file += "/creo/config.json"
-
-		reader, err := os.Open(file)
-		if err != nil {
-			fmt.Println("Config file not found")
-			os.Exit(1)
-		}
-
-		byteData, _ := ioutil.ReadAll(reader)
-		defer reader.Close()
-		
-		Project := Template{}
-		json := json.Unmarshal(byteData, &Project)
-		if json != nil {
-			fmt.Println(json)
-			os.Exit(1)
-		}
-
-		return Project
+	Project := Template{}
+	json := json.Unmarshal(byteData, &Project)
+	if json != nil {
+		fmt.Println(json)
+		os.Exit(1)
 	}
 
-	type Project struct {
-		Name					string							`arg:"$name" cli:"-n"`
-		ProjectsDir		string							`arg:"$projectsDir"`
-		Path					string							`arg:"$path"`
-		TemplateName	string							`cli:"-t"`
-		Structure			*TemplateStructure	
-	}
+	return Project
+}
+
+type Project struct {
+	Name					string							`arg:"$name" cli:"-n"`
+	ProjectsDir		string							`arg:"$projectsDir"`
+	Path					string							`arg:"$path"`
+	TemplateName	string							`cli:"-t"`
+	Structure			*TemplateStructure	
+}
 
 func (project *Project)GenerateProjectPaths(){
 	if project.Structure.ProjectsDir != "" {
