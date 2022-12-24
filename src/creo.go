@@ -2,40 +2,29 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"reflect"
-	"strings"
-)
+		"encoding/json"
+		"errors"
+		"fmt"
+		"io/ioutil"
+		"os"
+		"os/exec"
+		"reflect"
+		"strings"
+	)
 
-type TemplateStructure struct {
-	Inherit									bool			`json:"inherit"`
-	ProjectsDir							string		`json:"projectsDir"`
-	ParentTemplate					string		`json:"parent"`
-	Git											bool			`json:"git"`	
-	Gitignore								string		`json:"gitignore"`
-	Env											bool			`json:"env"`
-	IgnoreProjectPrexists		bool			`json:"ignoreProjectPrexists"`
-	ExternalProgramsEnd			[]string	`json:"externalProgramsEnd"`
-	ExternalProgramsStart		[]string	`json:"externalProgramsStart"`
-	Dirs										[]string	`json:"dirs"`
-	Files										[]string	`json:"files"`
-}
-
-type Template map[string]TemplateStructure
-
-func ReadConfig() Template {
-	file, _ := os.UserConfigDir()
-	file += "/creo/config.json"
-
-	reader, err := os.Open(file)
-	if err != nil {
-		fmt.Println("Config file not found")
-		os.Exit(1)
+	// TODO: Setup project structure inheritance
+	type TemplateStructure struct {
+		Inherit									bool			`json:"inherit"`
+		ProjectsDir							string		`json:"projectsDir"`
+		ParentTemplate					string		`json:"parent"`
+		Git											bool			`json:"git"`	
+		Gitignore								string		`json:"gitignore"`
+		Env											bool			`json:"env"`
+		IgnoreProjectPrexists		bool			`json:"ignoreProjectPrexists"`
+		ExternalProgramsEnd			[]string	`json:"externalProgramsEnd"`
+		ExternalProgramsStart		[]string	`json:"externalProgramsStart"`
+		Dirs										[]string	`json:"dirs"`
+		Files										[]string	`json:"files"`
 	}
 
 	byteData, _ := ioutil.ReadAll(reader)
@@ -57,6 +46,7 @@ type Project struct {
 	Path				string							`arg:"$path"`
 	Structure		*TemplateStructure
 }
+	type Template map[string]TemplateStructure
 
 func NewProject(name string, structure *TemplateStructure) Project {
 	project := Project{
