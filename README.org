@@ -1,0 +1,189 @@
+#+TITLE: Creo
+#+DESCRIPTION: A command line based project generation utility
+
+* Overview
+As many of have found that starting a new project can get tedious. First you need to create a new directory in your projects directory, then create all the sub-folders, create all the base files, and then finally can you start working on the project.
+
+After dealing with this frustration numerous times and annoyed with all the separate utilities for various ecosystems, I decided to create a cohesive system to rapidly template projects from a single JSON configuration file.
+
+* Table of Contents                                                     :toc:
+- [[#overview][Overview]]
+- [[#installation][Installation]]
+  - [[#dependencies][Dependencies]]
+- [[#usage][Usage]]
+  - [[#command-line-arguments][Command Line Arguments]]
+- [[#configuration][Configuration]]
+  - [[#inherit-wip][Inherit WIP]]
+  - [[#ignoreprojectprexists][ignoreProjectPrexists]]
+  - [[#projectsdir][projectsDir]]
+  - [[#git][Git]]
+  - [[#gitignore][gitignore]]
+  - [[#env][Env]]
+  - [[#dirs][Dirs]]
+  - [[#files][Files]]
+  - [[#externalprogramsend][externalProgramsEnd]]
+  - [[#externalprogramsstart][externalProgramsStart]]
+- [[#feedback][Feedback]]
+
+* Installation
+*NOTE* The project is still under development and therefore it isn't supported through package managers. Due to this the only way to use this is to build it from source. Also this has been untested for Windows.
+
+1. First clone this repo.
+   #+begin_src bash
+     git clone "https://github.com/ParthTri/Creo.git"
+   #+end_src
+2. Next build the source code.
+   #+begin_src bash
+     cd Creo
+     go build src/creo.go
+   #+end_src
+3. Finally add the binary to your path
+
+** Dependencies
+Creo is entirely written in Go, using modules from the standard library. For best results you should compile with using go version >= 1.19.4.
+
+* Usage
+To use Creo run ~creo~ in the terminal. From here you will be asked to enter the template name, followed by the project name.
+#+begin_src bash
+    creo
+#+end_src
+
+By default the ~example.json~ will be used if the configuration file at ~$XDG_Config/creo/config.json~ is not found.
+
+And thats it.
+
+** Command Line Arguments
+Creo also comes with the option of making project generation even easier with the use of command line arguments.
+
+To use a specify the template without going through the input statements use the ~-t~ flag followed by the name of the template to quickly load a template.
+
+Similarly to quickly set the name of the project use the ~-n~ flag, followed by the name of the project.
+
+* Configuration
+The greatest part of this utility is the ease of configuration of templates using the simple configuration file.
+Here is an example configuration:
+#+begin_src json
+  {
+      "Python": { 
+          "inherit": false,
+          "projectsDir": "~/Developer/",
+          "git": true,
+          "gitignore": "__pycache__\n.venv/",
+          "env": false,
+          "externalProgramsEnd": [
+              "python3 -m venv .venv"
+          ],
+          "dirs": [
+              "tests",
+              "src",
+              "docs",
+              "docs/examples"
+          ],
+          "files": [
+              "docs/Purpose.org",
+              "README.org"
+          ]
+      },
+      "React": {
+          "inherit": false,
+          "ignoreProjectPrexists": true,
+          "git": false,
+          "env": false,
+          "externalProgramsEnd": [
+              "pnpm install"
+          ],
+          "externalProgramsStart": [
+              "pnpm create vite $name --template react"
+          ]
+      }
+  }
+#+end_src
+
+The first part of any template is the template name, denoted as a key.
+#+begin_src json
+  {
+      "Python": ..
+   }
+#+end_src
+
+Then a project can the following configurable attributes, that are denoted in key value pairs.
+
+** Inherit WIP
+*NOTE* This is a work in progress feature.
+This attribute allows you to have inherited templates. By referencing an earlier template using its name, the current template would be able to inherit its attributes, and overwrite any if provided with the corrosponding attribute.
+
+** ignoreProjectPrexists
+This simple boolean attribute is for overwriting a directory if a project already exists in that place.
+This is useful if you are using an external program to scaffold the program. See [[externalProgramsStart]].
+
+** projectsDir
+The projectsDir attribute is used to set the directory desired where all these projects are created.
+This can be set by providing a valid path to the configuration file.
+
+** Git
+The git attribute is boolean check, to initialise a git repository for this project.
+
+** gitignore
+The gitignore attribute can either be set to a string or false value.
+The false value will not create a gitignore file.
+If a string is passed it will create a gitignore file and write in the data passed to it.
+** Env
+The env attribute is a boolean value, that creates a ~.env~ file in the project root.
+** Dirs
+The dirs attribute accepts a list of sub-directory names that will be created to scaffold the project.
+For example take this configuration:
+#+begin_src json
+  "dirs": [
+      "src",
+      "src/lib",
+      "tests"
+  ]
+#+end_src
+This would create the following directory tree.
+
+#+begin_src ascii
+    New Project/
+    ├─ tests/
+    ├─ src/
+    │  ├─ lib/
+
+#+end_src
+
+This operation can be used declaratively. Meaning there isn't a need to explicitly have a directory for ~src~ and then a following entry for ~src/lib~. The ~src/lib~ value will create both the ~src~ directory and the ~lib~ sub-directory.
+** Files
+Similar to the dirs attribute, scaffold files an also be generated using files attribute.
+It takes in a list of file names and their relative path from the project root.
+
+For example:
+#+begin_src json
+  "files": [
+      "src/main.go",
+      "src/lib/lib.go"
+      "tests/main.test.go",
+      "README.org"
+  ]
+#+end_src
+
+This would generate the following file tree.
+#+begin_src ascii
+    New Project/
+    ├─ tests/
+    │  ├─ main.test.go
+    ├─ src/
+    │  ├─ main.go
+    │  ├─ lib/
+    │  │  ├─ lib.go
+    ├─ README.org
+#+end_src
+** externalProgramsEnd
+The ~externalProgramsEnd~ attribute is used to run external shell commands after Creo has executed all operations.
+It accepts a list of commands that get executed in order.
+
+** externalProgramsStart
+Similar to [[externalProgramsEnd]], ~externalProgramsStart~ runs shell commands before creo has executed any operations, including the creation of the project directory.
+
+This is useful if you are using other tools to create projects, for example ~vite~ for frontend development.
+
+* Feedback
+Feel free the reach out about any queries or any comments that you have.
+Please be kind as this my first open source project for the community.
