@@ -114,7 +114,7 @@ This attribute allows you to have inherited templates. By referencing an earlier
 
 ** ignoreProjectPrexists
 This simple boolean attribute is for overwriting a directory if a project already exists in that place.
-This is useful if you are using an external program to scaffold the program. See [[externalProgramsStart]].
+This is useful if you are using an external program to scaffold the program. See [[*externalProgramsStart][externalProgramsStart]].
 
 ** projectsDir
 The projectsDir attribute is used to set the directory desired where all these projects are created.
@@ -180,7 +180,7 @@ The ~externalProgramsEnd~ attribute is used to run external shell commands after
 It accepts a list of commands that get executed in order.
 
 ** externalProgramsStart
-Similar to [[externalProgramsEnd]], ~externalProgramsStart~ runs shell commands before creo has executed any operations, including the creation of the project directory.
+Similar to [[*externalProgramsEnd][externalProgramsEnd]], ~externalProgramsStart~ runs shell commands before creo has executed any operations, including the creation of the project directory.
 
 This is useful if you are using other tools to create projects, for example ~vite~ for frontend development.
 
