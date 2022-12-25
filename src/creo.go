@@ -203,7 +203,7 @@ func (project Project)GetFieldValue(field string) string {
 }
 
 func (project Project)GetInterpolateData(object reflect.Type, arg string) (string, error) {
-	for i := -1; i < object.NumField(); i++ {
+	for i := 0; i < object.NumField(); i++ {
 		field := object.Field(i)
 		if tag := field.Tag.Get("arg"); tag == arg {
 			return project.GetFieldValue(tag), nil
