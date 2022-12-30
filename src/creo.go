@@ -177,22 +177,6 @@ func (project Project)Git() error {
 	return err
 }
 
-// Iterate over external programs as listed in TemplateStructure.ExternalProgramsEnd and run them at the end of project construction
-func (project Project)AfterHook() error {
-	var Err error
-	for _, command := range project.Structure.ExternalProgramsEnd {
-		commandSplit := strings.Split(command, " ")	
-		os.Chdir(project.Path)
-
-		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
-		err := cmd.Run()
-		if err != nil {
-			Err = err
-		}
-	}
-	return Err
-}
-
 func (project Project)GetFieldValue(field string) string {
 	fieldsMap := map[string]string{
 		"$name": project.Name,
@@ -212,15 +196,21 @@ func (project Project)GetInterpolateData(object reflect.Type, arg string) (strin
 	return "", errors.New("Tag Not Found")
 }
 
-// Iterate over external programs as listed in TemplateStructure.ExternalProgramsStart and run them at the start of project construction before the project directory is made 
-func (project Project)BeforeHook() error {
+// Iterate over list of external programs listed in TemplateStructure and run them depending on the directory function provided
+func (project Project)Hook(directory func(), point bool) error {
 	var Err error
+	var Range []string
+	if point {
+		Range = project.Structure.ExternalProgramsStart
+	} else {
+		Range = project.Structure.ExternalProgramsEnd
+	}
 	object := reflect.TypeOf(project)
 
 	var interpolateData string
 	var interpolateDataIndex int
-	for _, command := range project.Structure.ExternalProgramsStart {
-		commandSplit := strings.Split(command, " ")		
+	for _, command := range Range {
+		commandSplit := strings.Split(command, " ")
 		for index, arg := range commandSplit {
 			if string(arg[0]) == "$" {
 				data, err := project.GetInterpolateData(object, arg)
@@ -236,7 +226,7 @@ func (project Project)BeforeHook() error {
 			commandSplit[interpolateDataIndex] = interpolateData
 		}
 
-		os.Chdir(project.ProjectsDir)
+		directory()
 		cmd := exec.Command(commandSplit[0], commandSplit[1:]...)
 		err := cmd.Run()
 		if err != nil {
