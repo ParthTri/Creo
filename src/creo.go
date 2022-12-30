@@ -283,7 +283,7 @@ func main() {
 
 	// Run BeforeHook
 	if len(Project.Structure.ExternalProgramsStart) != 0 {
-		fmt.Println(Project.BeforeHook())
+		fmt.Println(Project.Hook(func () {os.Chdir(Project.ProjectsDir)}, true))
 	}
 
 	// Creating the project diretory
@@ -330,7 +330,7 @@ func main() {
 	}
 	
 	if len(Project.Structure.ExternalProgramsEnd) != 0 {
-		err := Project.AfterHook()
+		err := Project.Hook(func () {os.Chdir(Project.Path)}, false)
 		if err != nil {
 			fmt.Println("Error running")
 			fmt.Println(err)
