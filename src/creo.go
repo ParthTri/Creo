@@ -17,6 +17,7 @@ type TemplateStructure struct {
 	Inherit									bool			`json:"inherit"`
 	ProjectsDir							string		`json:"projectsDir"`
 	ParentTemplate					string		`json:"parent"`
+	parent									*TemplateStructure
 	Git											bool			`json:"git"`	
 	Gitignore								string		`json:"gitignore"`
 	Env											bool			`json:"env"`
@@ -28,6 +29,27 @@ type TemplateStructure struct {
 }
 
 type Template map[string]TemplateStructure
+
+func (template *TemplateStructure)LookupParent (templates Template) error {
+	if !template.Inherit {
+		return nil
+	}
+	
+	for key, value := range templates {
+		if key == template.ParentTemplate {
+			template.parent = &value
+			break
+		}
+	}
+
+	if template.parent == nil {
+		var errorString string = fmt.Sprintf("Parent template '%v' not found", template.ParentTemplate)
+
+		return errors.New(errorString)
+	}
+
+	return nil
+}
 
 func ReadConfig() Template {
 	file, _ := os.UserConfigDir()
