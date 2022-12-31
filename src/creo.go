@@ -31,10 +31,6 @@ type TemplateStructure struct {
 type Template map[string]TemplateStructure
 
 func (template *TemplateStructure)LookupParent (templates Template) error {
-	if !template.Inherit {
-		return nil
-	}
-	
 	for key, value := range templates {
 		if key == template.ParentTemplate {
 			template.parent = &value
@@ -328,6 +324,8 @@ func main() {
 	if Project.Structure.Env {
 		path := fmt.Sprintf("%v/.env", Project.Path)
 		_, err := os.Create(path)
+	if Project.Structure.ParentTemplate != "" {
+		err = Project.Structure.LookupParent(Config)
 		if err != nil {
 			fmt.Println("Error creating .env file")
 		}
@@ -339,6 +337,9 @@ func main() {
 			fmt.Println("Error Creating Sub-Directories")
 			fmt.Println(err)
 			return 
+			os.Exit(1)
+		} else {
+			Parent++
 		}
 	}
 	
