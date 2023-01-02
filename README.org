@@ -13,7 +13,7 @@ After dealing with this frustration numerous times and annoyed with all the sepa
 - [[#usage][Usage]]
   - [[#command-line-arguments][Command Line Arguments]]
 - [[#configuration][Configuration]]
-  - [[#inherit-wip][Inherit WIP]]
+  - [[#inherit][Inherit]]
   - [[#ignoreprojectprexists][ignoreProjectPrexists]]
   - [[#projectsdir][projectsDir]]
   - [[#git][Git]]
@@ -108,10 +108,54 @@ The first part of any template is the template name, denoted as a key.
 
 Then a project can the following configurable attributes, that are denoted in key value pairs.
 
-** Inherit WIP
-*NOTE* This is a work in progress feature.
+** Inherit
 This attribute allows you to have inherited templates. By referencing an earlier template using its name, the current template would be able to inherit its attributes, and overwrite any if provided with the corrosponding attribute.
 
+Here is an example using this feature:
+#+begin_src json
+  "Go": {
+      "inherit": false,
+      "ignoreProjectPrexists": false,
+      "git": true,
+      "env": false,
+      "dirs": [
+          "cmd",
+          "lib"
+      ],
+      "files": [
+          "cmd/main.go"
+      ]
+  },
+  "Api": {
+      "inherit": true,
+      "parent": "Go",
+      "ignoreProjectPrexists": true,
+      "git": true,
+      "env": false,
+      "dirs": [
+          "routes",
+          "db",
+          "middleware",
+          "server"
+      ],
+      "files": [
+          "main.go",
+          "db/db.go",
+          "routes/routes.go",
+          "middleware/middleware.go",
+          "server/server.go"
+      ],
+      "externalProgramsEnd": [
+          "go mod init $name",
+          "go get -u github.com/gin-gonic/gin"
+      ]
+  }
+#+end_src
+
+In this example the ~Api~ template inherits from the ~Go~ template.
+It then creates all the files and directories from the parent templates, and also runs the external programs.
+
+*NOTE* that the the programs will be run of the first template and then the second after everything has executed in the parent. Meaning the ~Go~ templates external programs will run, and then the configuration of the child template will be executed.
 ** ignoreProjectPrexists
 This simple boolean attribute is for overwriting a directory if a project already exists in that place.
 This is useful if you are using an external program to scaffold the program. See [[*externalProgramsStart][externalProgramsStart]].
@@ -186,4 +230,5 @@ This is useful if you are using other tools to create projects, for example ~vit
 
 * Feedback
 Feel free the reach out about any queries or any comments that you have.
+
 Please be kind as this my first open source project for the community.
