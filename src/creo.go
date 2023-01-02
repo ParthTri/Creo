@@ -263,7 +263,8 @@ func input(prompt string, reader *bufio.Reader) (string, error) {
 
 func main() {
 	var projectStructure TemplateStructure
-	var Project *Project = &Project{}
+	var TargetProject *Project = &Project{}
+	var Templates = make([]*Project, 2)
 	Config := ReadConfig()
 	args, err := GetCliArgs()
 
@@ -271,93 +272,109 @@ func main() {
 		for _, arg := range args {
 			if arg[0] == "-t" {
 				projectStructure = Config[args[0][1]]
-				Project.Structure = &projectStructure
+				TargetProject.Structure = &projectStructure
 			}
 		}
 	}
 	if len(args) > 0 {
-		Project.loadArgs(args)	
+		TargetProject.loadArgs(args)	
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	if Project.Structure == nil {
+	if TargetProject.Structure == nil {
 		projectType, _ := input("What type of project is it? ", reader)
 		projectStructure, exists := Config[projectType]
 
 		if !exists {
-			fmt.Println("Project Template Not Found")
+			fmt.Println("TargetProject Template Not Found")
 			return
 		}
-		Project.Structure = &projectStructure
-		Project.TemplateName = projectType
+		TargetProject.Structure = &projectStructure
+		TargetProject.TemplateName = projectType
 	}
 	
-	if Project.Name == "" {
+	if TargetProject.Name == "" {
 		name, _ := input("What is the name of this project: ", reader)
-		Project.Name = name
+		TargetProject.Name = name
 	}
 
-	Project.GenerateProjectPaths()
-
-	// Run BeforeHook
-	if len(Project.Structure.ExternalProgramsStart) != 0 {
-		fmt.Println(Project.Hook(func () {os.Chdir(Project.ProjectsDir)}, true))
-	}
-
-	// Creating the project diretory
-	err = os.Mkdir(Project.Path, 0750)
-	if os.IsExist(err) && Project.Structure.IgnoreProjectPrexists { }	else if err != nil {
-		fmt.Println("Error creating project directory")
-		fmt.Println(err)
-		return
-	}
-	
-	if Project.Structure.Git {
-		status := Project.Git()
-		if status != nil {
-			fmt.Println("Error with git")
-			fmt.Println(status)
-			return
-		}
-	}
-	
-	if Project.Structure.Env {
-		path := fmt.Sprintf("%v/.env", Project.Path)
-		_, err := os.Create(path)
-	if Project.Structure.ParentTemplate != "" {
-		err = Project.Structure.LookupParent(Config)
+	if TargetProject.Structure.Inherit {
+		err = TargetProject.Structure.LookupParent(Config)
 		if err != nil {
-			fmt.Println("Error creating .env file")
-		}
-	}
-	
-	if len(Project.Structure.Dirs) != 0 {
-		err := Project.CreateDirectories()
-		if err != nil {
-			fmt.Println("Error Creating Sub-Directories")
 			fmt.Println(err)
-			return 
 			os.Exit(1)
-		} else {
-			Parent++
-		}
+		} 
+
+		parent := *TargetProject
+		parent.Structure = TargetProject.Structure.parent
+		Templates[0] = &parent
+		Templates[1] = TargetProject
+	} else {
+		Templates[0] = TargetProject
 	}
-	
-	if len(Project.Structure.Files) != 0 {
-		err := Project.CreateFiles()
-		if err != nil {
-			fmt.Println("Error Creating Files")
-			fmt.Println(err)
-			return 
+
+
+	for _, project := range Templates{
+		if project == nil {
+			return
 		}
-	}
-	
-	if len(Project.Structure.ExternalProgramsEnd) != 0 {
-		err := Project.Hook(func () {os.Chdir(Project.Path)}, false)
-		if err != nil {
-			fmt.Println("Error running")
+
+		project.GenerateProjectPaths()
+		// Run BeforeHook
+		if len(project.Structure.ExternalProgramsStart) != 0 {
+			fmt.Println(project.Hook(func () {os.Chdir(project.ProjectsDir)}, true))
+		}
+
+		// Creating the project diretory
+		err = os.Mkdir(project.Path, 0750)
+		if os.IsExist(err) && project.Structure.IgnoreProjectPrexists { }	else if err != nil {
+			fmt.Println("Error creating project directory")
 			fmt.Println(err)
 			return
+		}
+
+		if project.Structure.Git {
+			status := project.Git()
+			if status != nil {
+				fmt.Println("Error with git")
+				fmt.Println(status)
+				return
+			}
+		}
+
+		if project.Structure.Env {
+			path := fmt.Sprintf("%v/.env", project.Path)
+			_, err := os.Create(path)
+			if err != nil {
+				fmt.Println("Error creating .env file")
+			}
+		}
+
+		if len(project.Structure.Dirs) != 0 {
+			err := project.CreateDirectories()
+			if err != nil {
+				fmt.Println("Error Creating Sub-Directories")
+				fmt.Println(err)
+				return 
+			}
+		}
+
+		if len(project.Structure.Files) != 0 {
+			err := project.CreateFiles()
+			if err != nil {
+				fmt.Println("Error Creating Files")
+				fmt.Println(err)
+				return 
+			}
+		}
+
+		if len(project.Structure.ExternalProgramsEnd) != 0 {
+			err := project.Hook(func () {os.Chdir(project.Path)}, false)
+			if err != nil {
+				fmt.Println("Error running")
+				fmt.Println(err)
+				return
+			}
 		}
 	}
 }
