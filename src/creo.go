@@ -195,6 +195,7 @@ func (project Project)Git() error {
 	return err
 }
 
+// TODO: Rewrite function to use reflect.Value
 func (project Project)GetFieldValue(field string) string {
 	fieldsMap := map[string]string{
 		"$name": project.Name,
@@ -313,6 +314,8 @@ func main() {
 		Templates[0] = TargetProject
 	}
 
+	// BUG: Project inheritence can have conflicts when creating .env and .gitignore files
+	// TODO: Need to make sure child templates overwrite these configurations
 
 	for _, project := range Templates{
 		if project == nil {
