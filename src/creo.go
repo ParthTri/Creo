@@ -196,13 +196,19 @@ func (project Project)Git() error {
 }
 
 // TODO: Rewrite function to use reflect.Value
-func (project Project)GetFieldValue(field string) string {
-	fieldsMap := map[string]string{
-		"$name": project.Name,
-		"$projectsDir": project.ProjectsDir,
-		"$path": project.Path,
+func (project *Project)GetFieldValue(field string) string {
+	tagObject := reflect.TypeOf(*project)
+	object := reflect.ValueOf(project).Elem()
+
+	for i := 0; i < object.NumField(); i++ {
+		fieldVal := object.Field(i)
+		tagField := tagObject.Field(i)
+		if field == tagField.Tag.Get("arg") {
+			return fieldVal.String()
+		}
 	}
-	return fieldsMap[field]
+
+	return ""
 }
 
 func (project Project)GetInterpolateData(object reflect.Type, arg string) (string, error) {
